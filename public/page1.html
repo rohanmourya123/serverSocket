@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page 1 - Drawing</title>
+</head>
+<body>
+  <canvas id="canvas" width="800" height="600"></canvas>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+
+    let isDrawing = false;
+
+    canvas.addEventListener('mousedown', () => {
+      isDrawing = true;
+    });
+
+    canvas.addEventListener('mousemove', (event) => {
+      if (!isDrawing) return;
+
+      const x = event.clientX - canvas.getBoundingClientRect().left;
+      const y = event.clientY - canvas.getBoundingClientRect().top;
+
+      context.lineTo(x, y);
+      context.stroke();
+
+      socket.emit('draw', { x, y });
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      isDrawing = false;
+    });
+
+    socket.on('draw', (data) => {
+      context.lineTo(data.x, data.y);
+      context.stroke();
+    });
+  </script>
+</body>
+</html>
